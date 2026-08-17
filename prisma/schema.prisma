@@ -1,0 +1,166 @@
+// Prisma schema — Gestión financiera WeroDev
+// Datasource y generador configurados por `prisma init`. No modificar.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────
+
+enum TipoCategoria {
+  INGRESO
+  GASTO
+}
+
+enum EstadoIngreso {
+  PENDIENTE
+  ANTICIPO
+  LIQUIDADO
+}
+
+enum MetodoPago {
+  EFECTIVO
+  TRANSFERENCIA
+  TARJETA
+  OTRO
+}
+
+enum RolUsuario {
+  ADMIN
+  OPERADOR
+  CONSULTA
+}
+
+enum EntidadEliminable {
+  INGRESO
+  GASTO
+}
+
+enum EstadoSolicitud {
+  PENDIENTE
+  APROBADA
+  RECHAZADA
+}
+
+// ─── Modelos ──────────────────────────────────────────────────────────────
+
+model Cliente {
+  id            String    @id @default(cuid())
+  nombre        String
+  telefono      String?
+  correo        String?
+  empresa       String?
+  fechaRegistro DateTime  @default(now())
+  notas         String?
+  activo        Boolean   @default(true)
+  ingresos      Ingreso[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("clientes")
+}
+
+model Categoria {
+  id        String        @id @default(cuid())
+  nombre    String
+  tipo      TipoCategoria
+  color     String?
+  activa    Boolean       @default(true)
+  ingresos  Ingreso[]
+  gastos    Gasto[]
+  createdAt DateTime      @default(now())
+
+  @@map("categorias")
+}
+
+model Ingreso {
+  id          String        @id @default(cuid())
+  clienteId   String?
+  cliente     Cliente?      @relation(fields: [clienteId], references: [id])
+  concepto    String
+  categoriaId String
+  categoria   Categoria     @relation(fields: [categoriaId], references: [id])
+  monto       Decimal       @db.Decimal(12, 2)
+  metodoPago  MetodoPago
+  estado      EstadoIngreso @default(LIQUIDADO)
+  fecha       DateTime
+  notas       String?
+  origen      String        @default("manual") // "manual" | "cotizacion" | "orden_trabajo" | "factura"
+  origenId    String? // puerta trasera para módulos futuros
+  creadoPorId String
+  creadoPor   Usuario       @relation("IngresoCreadoPor", fields: [creadoPorId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("ingresos")
+}
+
+model Gasto {
+  id          String     @id @default(cuid())
+  concepto    String
+  categoriaId String
+  categoria   Categoria  @relation(fields: [categoriaId], references: [id])
+  monto       Decimal    @db.Decimal(12, 2)
+  metodoPago  MetodoPago
+  fecha       DateTime
+  notas       String?
+  creadoPorId String
+  creadoPor   Usuario    @relation("GastoCreadoPor", fields: [creadoPorId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("gastos")
+}
+
+model Usuario {
+  id                   String                 @id @default(cuid())
+  nombre               String
+  correo               String                 @unique
+  passwordHash         String
+  rol                  RolUsuario             @default(OPERADOR)
+  activo               Boolean                @default(true)
+  ultimoLogin          DateTime?
+  refreshTokens        RefreshToken[]
+  ingresosCreados      Ingreso[]              @relation("IngresoCreadoPor")
+  gastosCreados        Gasto[]                @relation("GastoCreadoPor")
+  solicitudesHechas    SolicitudEliminacion[] @relation("Solicitante")
+  solicitudesResueltas SolicitudEliminacion[] @relation("Resolutor")
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  @@map("usuarios")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  usuarioId String
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  tokenHash String
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
+model SolicitudEliminacion {
+  id            String            @id @default(cuid())
+  entidadTipo   EntidadEliminable
+  entidadId     String
+  solicitanteId String
+  solicitante   Usuario           @relation("Solicitante", fields: [solicitanteId], references: [id])
+  motivo        String
+  estado        EstadoSolicitud   @default(PENDIENTE)
+  resueltoPorId String?
+  resueltoPor   Usuario?          @relation("Resolutor", fields: [resueltoPorId], references: [id])
+  comentario    String?
+  resueltoEn    DateTime?
+  createdAt     DateTime          @default(now())
+
+  @@map("solicitudes_eliminacion")
+}

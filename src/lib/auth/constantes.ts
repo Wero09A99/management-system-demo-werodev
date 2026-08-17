@@ -1,0 +1,5 @@
+export const ACCESS_DURACION_HORAS = 1;
+export const REFRESH_DIAS = 30;
+export const ACCESS_MILISEGUNDOS = ACCESS_DURACION_HORAS * 60 * 60 * 1000;
+export const REFRESH_MILISEGUNDOS = REFRESH_DIAS * 24 * 60 * 60 * 1000;
+export const refreshTokenDurationMs = REFRESH_MILISEGUNDOS;

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoginForm } from "@/modules/auth/components/organisms/LoginForm";
 import { Badge } from "@/design-system/atoms/badge";
-import { Clock } from "lucide-react";
+import { Clock, Sparkles } from "lucide-react";
 import { Icon } from "@/design-system/atoms/icon";
 
 export type LoginTemplateProps = {
@@ -14,6 +14,8 @@ export type LoginTemplateProps = {
  * Los colores los maneja el design system; aquí solo se define el layout.
  */
 export function LoginTemplate({ motivoExpirado = false }: LoginTemplateProps) {
+  const modoDemo = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-sm">
@@ -28,6 +30,19 @@ export function LoginTemplate({ motivoExpirado = false }: LoginTemplateProps) {
               Tu sesión expiró. Ingresa de nuevo.
             </Badge>
           ) : null}
+
+          {modoDemo ? (
+            <div className="rounded-lg border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5 font-medium text-foreground">
+                <Icon icon={Sparkles} size={14} />
+                Credenciales de demostración
+              </span>
+              <span className="mt-1 block font-mono">
+                Usuario: test · Contraseña: 12345678
+              </span>
+            </div>
+          ) : null}
+
           <LoginForm />
         </CardContent>
       </Card>

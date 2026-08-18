@@ -38,7 +38,7 @@ export function LoginTemplate({ motivoExpirado = false }: LoginTemplateProps) {
                 Credenciales de demostración
               </span>
               <span className="mt-1 block font-mono">
-                Usuario: test · Contraseña: 12345678
+                Correo: test@example.com · Contraseña: 1234567
               </span>
             </div>
           ) : null}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Montserrat } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/design-system/organisms/toaster";
 import { StoreProvider } from "@/store/StoreProvider";
 import { ThemeProvider } from "@/design-system/providers/ThemeProvider";
@@ -40,6 +41,7 @@ export default async function RootLayout({
           <StoreProvider>{children}</StoreProvider>
           <Toaster />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
